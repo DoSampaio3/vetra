@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Landing page (dark premium) ─── */
+:root {
+  --landing-bg: #020817;
+  --landing-text: #e2e8f0;
+  --landing-muted: #94a3b8;
+  --landing-dim: #64748b;
+  --landing-accent: #38bdf8;
+  --landing-border: rgba(56,189,248,0.12);
+
+  /* App autenticado (light) */
+  --app-bg: #F8FAFC;
+  --app-card: #FFFFFF;
+  --app-border: #E5E7EB;
+  --app-text: #111827;
+  --app-muted: #6B7280;
+  --app-accent: #2563EB;
+  --app-sidebar: #0F172A;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #020817;
+  color: #e2e8f0;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.2); border-radius: 10px; }
+
+/* ─── Selection ─── */
+::selection { background: rgba(56,189,248,0.2); color: #38bdf8; }
+
+/* ─── Focus ─── */
+*:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; border-radius: 6px; }
+
+/* ─── App pages (authenticated) use white bg ─── */
+.app-page { background: #F8FAFC; color: #111827; }
+
+/* ─── Legacy landing utilities ─── */
+.input {
+  width: 100%;
+  background: rgba(10,22,40,0.8);
+  border: 1px solid rgba(56,189,248,0.12);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: #e2e8f0;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input:focus {
+  border-color: rgba(56,189,248,0.5);
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+}
+.input::placeholder { color: rgba(100,116,139,0.6); }
+
+/* ─── App input (light) ─── */
+.app-input {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #111827;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.app-input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.app-input::placeholder { color: #9CA3AF; }
+
+.label { display: block; font-size: 11px; font-weight: 600; color: rgba(100,116,139,0.8); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.app-label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s ease; }
+.btn-primary { background: linear-gradient(135deg, #1d4ed8, #0891b2); color: #fff; box-shadow: 0 0 20px rgba(56,189,248,0.2); }
+.btn-primary:hover { box-shadow: 0 0 30px rgba(56,189,248,0.35); transform: translateY(-1px); }
+.btn-ghost { background: rgba(255,255,255,0.04); color: rgba(148,163,184,0.8); border: 1px solid rgba(255,255,255,0.08); }
+.btn-ghost:hover { border-color: rgba(56,189,248,0.2); color: #e2e8f0; }
+
+.card {
+  background: rgba(10,22,40,0.6);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(10px);
+}
+
+/* ─── App card (light) ─── */
+.app-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+/* ─── Skeleton ─── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(56,189,248,0.3); }
+  50% { box-shadow: 0 0 40px rgba(56,189,248,0.5); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-in { animation: fadeIn 0.35s ease forwards; }
