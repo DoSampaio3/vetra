@@ -215,7 +215,7 @@ async function searchTribunal(
       return [];
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     const hits = data?.hits?.hits || [];
 
     return hits

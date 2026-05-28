@@ -145,7 +145,7 @@ export async function analyzeInstagramProfile(
       };
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     // RocketAPI retorna { response: { body: { data: { user: {...} } } } }
     const user = data?.response?.body?.data?.user;
