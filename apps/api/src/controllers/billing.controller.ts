@@ -13,7 +13,7 @@ const PLAN_PRICES: Record<string, { plan: string; credits: number; value: number
   power: { plan: 'enterprise', credits: 999, value: 197.90, description: 'Vetra Power — Relatórios Ilimitados' },
 };
 
-async function asaasRequest(path: string, method = 'GET', body?: object) {
+async function asaasRequest(path: string, method = 'GET', body?: object): Promise<any> {
   if (!ASAAS_API_KEY) throw new Error('ASAAS_API_KEY não configurada');
   const res = await fetch(`${ASAAS_BASE_URL}${path}`, {
     method,
