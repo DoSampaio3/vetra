@@ -70,7 +70,7 @@ billingRouter.post('/create-checkout', authMiddleware, async (req: Authenticated
     // Pix e boleto: apenas para pagamentos únicos (Stripe não suporta Pix em subscriptions)
     const paymentMethods: string[] = isRecurring
       ? ['card']
-      : ['card', 'boleto', 'pix'];
+      : ['card', 'pix'];
 
     const sessionParams: any = {
       customer: customerId,
@@ -87,7 +87,6 @@ billingRouter.post('/create-checkout', authMiddleware, async (req: Authenticated
     if (!isRecurring) {
       sessionParams.payment_method_options = {
         pix: { expires_after_seconds: 86400 }, // 24 horas
-        boleto: { expires_after_days: 3 },      // 3 dias úteis
       };
     }
 
