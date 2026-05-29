@@ -26,13 +26,17 @@ function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [billingType, setBillingType] = useState<BillingType>('PIX');
+  const [cpf, setCpf] = useState('');
+  const [cpfError, setCpfError] = useState('');
 
   const handlePay = async () => {
     setError(''); setLoading(true);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('vetra_token') : null;
       if (!token) { router.push('/register?plan=' + planKey); return; }
-      const res = await api.billing.createCheckout(planKey, billingType);
+      const cleanCpf = cpf.replace(/\D/g, '');
+      if (cleanCpf.length !== 11 && cleanCpf.length !== 14) { setError('CPF ou CNPJ inválido.'); setLoading(false); return; }
+      const res = await api.billing.createCheckout(planKey, billingType, cleanCpf);
       if (res.checkout_url) { window.location.href = res.checkout_url; }
       else { setError('Erro ao iniciar pagamento. Tente novamente.'); }
     } catch (err: any) {
@@ -118,6 +122,16 @@ function CheckoutForm() {
                 <div style={{ display: 'flex', gap: '8px' }}><span style={{ color: '#34d399' }}>✓</span>Dados criptografados · Vetra nunca vê seus dados bancários</div>
                 <div style={{ display: 'flex', gap: '8px' }}><span style={{ color: '#34d399' }}>✓</span>Confirmação instantânea por email após pagamento</div>
               </div>
+            </div>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(148,163,184,0.8)', display: 'block', marginBottom: '6px' }}>CPF ou CNPJ</label>
+              <input
+                type='text'
+                placeholder='000.000.000-00'
+                value={cpf}
+                onChange={e => setCpf(e.target.value)}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+              />
             </div>
             {error && <div style={{ padding: '10px 14px', borderRadius: '10px', marginBottom: '16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '13px', color: '#f87171' }}>⚠ {error}</div>}
             <button onClick={handlePay} disabled={loading} style={{ ...S.payBtn, opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}>
