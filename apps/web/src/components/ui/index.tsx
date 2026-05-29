@@ -62,11 +62,11 @@ const badgeStyles: Record<BadgeVariant, string> = {
   gray:   'bg-slate-100 text-slate-600 border-slate-200',
 };
 
-export function Badge({ children, variant = 'gray' }: {
-  children: ReactNode; variant?: BadgeVariant;
+export function Badge({ children, variant = 'gray', className = '' }: {
+  children: ReactNode; variant?: BadgeVariant; className?: string;
 }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badgeStyles[variant]}`}>
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badgeStyles[variant]} ${className}`}>
       {children}
     </span>
   );
