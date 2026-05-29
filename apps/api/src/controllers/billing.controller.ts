@@ -40,10 +40,10 @@ billingRouter.post('/create-checkout', authMiddleware, async (req: Authenticated
     const planConfig = PLAN_PRICES[plan_key];
     if (!planConfig) return res.status(400).json({ error: 'Plano inválido.' });
     const user = await queryOne<{ email: string; name: string; asaas_customer_id?: string }>(
-      `SELECT u.email, u.name, s.asaas_customer_id FROM users u LEFT JOIN subscriptions s ON s.user_id = u.id WHERE u.id = $1 ORDER BY s.created_at DESC LIMIT 1`,
+      `SELECT u.email, u.full_name, s.asaas_customer_id FROM users u LEFT JOIN subscriptions s ON s.user_id = u.id WHERE u.id = $1 ORDER BY s.created_at DESC LIMIT 1`,
       [req.user!.id]
     );
-    const customerId = user?.asaas_customer_id || await getOrCreateCustomer(user?.email || '', user?.name || 'Cliente Vetra', req.user!.id);
+    const customerId = user?.asaas_customer_id || await getOrCreateCustomer(user?.email || '', user?.full_name || 'Cliente Vetra', req.user!.id);
     const isRecurring = plan_key !== 'explorer';
     const paymentType = billing_type || 'PIX';
     let checkoutUrl: string;
