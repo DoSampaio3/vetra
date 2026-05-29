@@ -39,7 +39,7 @@ billingRouter.post('/create-checkout', authMiddleware, async (req: Authenticated
     const { plan_key, billing_type } = req.body as { plan_key: string; billing_type?: string };
     const planConfig = PLAN_PRICES[plan_key];
     if (!planConfig) return res.status(400).json({ error: 'Plano inválido.' });
-    const user = await queryOne<{ email: string; name: string; asaas_customer_id?: string }>(
+    const user = await queryOne<{ email: string; full_name: string; asaas_customer_id?: string }>(
       `SELECT u.email, u.full_name, s.asaas_customer_id FROM users u LEFT JOIN subscriptions s ON s.user_id = u.id WHERE u.id = $1 ORDER BY s.created_at DESC LIMIT 1`,
       [req.user!.id]
     );
