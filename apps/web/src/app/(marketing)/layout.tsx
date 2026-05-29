@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { MarketingNav } from '@/components/marketing/layout/MarketingNav';
-import { MarketingFooter } from '@/components/marketing/layout/MarketingFooter';
+import MarketingNav from '@/components/marketing/layout/MarketingNav';
+import MarketingFooter from '@/components/marketing/layout/MarketingFooter';
 import '../globals.css';
 
 export const metadata: Metadata = {
