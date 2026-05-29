@@ -27,7 +27,11 @@ async function asaasRequest(path: string, method = 'GET', body?: object): Promis
 async function getOrCreateCustomer(email: string, name: string, userId: string, cpf?: string): Promise<string> {
   try {
     const existing = await asaasRequest(`/customers?externalReference=${userId}`);
-    if (existing?.data?.length > 0) return existing.data[0].id;
+    if (existing?.data?.length > 0) {
+      const existingId = existing.data[0].id;
+      if (cpf) await asaasRequest(`/customers/${existingId}`, 'PUT', { cpfCnpj: cpf.replace(/\D/g, '') });
+      return existingId;
+    }
   } catch {}
   const customer = await asaasRequest('/customers', 'POST', { name, email, externalReference: userId, ...(cpf ? { cpfCnpj: cpf.replace(/\D/g, '') } : {}) });
   return customer.id;
