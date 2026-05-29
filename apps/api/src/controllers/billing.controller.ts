@@ -43,6 +43,7 @@ billingRouter.post('/create-checkout', authMiddleware, async (req: Authenticated
       `SELECT u.email, u.full_name, s.asaas_customer_id FROM users u LEFT JOIN subscriptions s ON s.user_id = u.id WHERE u.id = $1 ORDER BY s.created_at DESC LIMIT 1`,
       [req.user!.id]
     );
+    console.log('[debug] cpf recebido:', cpf);
     const customerId = user?.asaas_customer_id || await getOrCreateCustomer(user?.email || '', user?.full_name || 'Cliente Vetra', req.user!.id, cpf);
     const isRecurring = plan_key !== 'explorer';
     const paymentType = billing_type || 'PIX';
