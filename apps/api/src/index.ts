@@ -43,7 +43,7 @@ app.use(cors({
 }));
 
 // ── Body parsing — guarda rawBody para webhook Stripe ────────────
-app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
+// Asaas usa JSON padrão
 app.use(express.json({ limit: '2mb' }));
 app.use(compression());
 app.use(sanitizeBody);
@@ -63,7 +63,7 @@ app.get('/health', (req, res) => {
       gemini: !!process.env.GEMINI_API_KEY,
       rapidapi: !!process.env.RAPIDAPI_KEY,
       datajud: !!process.env.DATAJUD_API_KEY,
-      stripe: !!process.env.STRIPE_SECRET_KEY,
+      asaas: !!process.env.ASAAS_API_KEY,
     },
   });
 });
