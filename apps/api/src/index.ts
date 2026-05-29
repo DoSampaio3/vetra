@@ -107,7 +107,7 @@ app.listen(PORT, async () => {
   if (!process.env.GEMINI_API_KEY)   console.warn('⚠️  GEMINI_API_KEY ausente — IA desativada');
   if (!process.env.RAPIDAPI_KEY)    console.warn('⚠️  RAPIDAPI_KEY ausente — Instagram desativado');
   if (!process.env.DATAJUD_API_KEY) console.warn('⚠️  DATAJUD_API_KEY ausente — Datajud desativado');
-  if (!process.env.STRIPE_SECRET_KEY) console.warn('⚠️  STRIPE_SECRET_KEY ausente — Pagamentos desativados');
+  if (!process.env.ASAAS_API_KEY) console.warn('ASAAS_API_KEY ausente - Pagamentos desativados');
 
   try {
     await db.query('SELECT 1');
