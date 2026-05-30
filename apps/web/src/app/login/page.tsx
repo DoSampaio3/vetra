@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
@@ -39,25 +40,19 @@ export default function LoginPage() {
     <div style={styles.page}>
       <div style={styles.bg} />
       <div style={styles.wrapper} className="animate-in">
-
-        {/* Logo */}
         <div style={styles.logo}>
           <span style={styles.logoMark}>◈</span>
           <span style={styles.logoText}>VETRA</span>
         </div>
         <p style={styles.tagline}>Sinais de Confiança Digital</p>
 
-        {/* Card */}
         <div style={styles.card}>
           <div style={styles.tabs}>
             {(['entrar', 'cadastrar'] as const).map(tab => (
               <button
                 key={tab}
-                onClick={() => setMode(tab as 'entrar' | 'cadastrar')}
-                style={{
-                  ...styles.tab,
-                  ...(mode === tab ? styles.tabActive : {}),
-                }}
+                onClick={() => setMode(tab)}
+                style={{ ...styles.tab, ...(mode === tab ? styles.tabActive : {}) }}
               >
                 {tab === 'entrar' ? 'Entrar' : 'Cadastrar'}
               </button>
@@ -68,47 +63,37 @@ export default function LoginPage() {
             {mode === 'cadastrar' && (
               <div>
                 <label className="label">Nome completo</label>
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="Seu nome"
+                <input className="input" type="text" placeholder="Seu nome"
                   value={form.full_name}
-                  onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
-                  required
-                />
+                  onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} required />
               </div>
             )}
             <div>
               <label className="label">Email</label>
-              <input
-                className="input"
-                type="email"
-                placeholder="voce@exemplo.com"
+              <input className="input" type="email" placeholder="voce@exemplo.com"
                 value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                required
-              />
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
             </div>
             <div>
-              <label className="label">Senha</label>
-              <input
-                className="input"
-                type="password"
+              <label className="label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Senha</span>
+                {mode === 'entrar' && (
+                  <Link href="/forgot-password" style={styles.forgotLink}>
+                    Esqueci minha senha
+                  </Link>
+                )}
+              </label>
+              <input className="input" type="password"
                 placeholder={mode === 'cadastrar' ? 'Mínimo 8 caracteres' : '••••••••'}
                 value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                required
-              />
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
             </div>
 
             {error && <p style={styles.error}>{error}</p>}
 
-            <button
-              type="submit"
-              className="btn btn-primary"
+            <button type="submit" className="btn btn-primary"
               style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
-              disabled={submitting}
-            >
+              disabled={submitting}>
               {submitting ? 'Processando...' : mode === 'entrar' ? 'Entrar na plataforma' : 'Criar conta'}
             </button>
           </form>
@@ -129,115 +114,21 @@ export default function LoginPage() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '24px',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  bg: {
-    position: 'fixed',
-    inset: 0,
-    background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,179,237,0.06) 0%, transparent 70%)',
-    pointerEvents: 'none',
-  },
-  wrapper: {
-    width: '100%',
-    maxWidth: '420px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '20px',
-  },
-  logo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  logoMark: {
-    fontSize: '28px',
-    color: 'var(--accent)',
-    lineHeight: 1,
-  },
-  logoText: {
-    fontFamily: 'var(--font-mono)',
-    fontSize: '24px',
-    fontWeight: 500,
-    letterSpacing: '0.18em',
-    color: 'var(--text)',
-  },
-  tagline: {
-    fontFamily: 'var(--font-mono)',
-    fontSize: '11px',
-    letterSpacing: '0.15em',
-    color: 'var(--text-muted)',
-    textTransform: 'uppercase',
-    marginTop: '-12px',
-  },
-  card: {
-    width: '100%',
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '32px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  tabs: {
-    display: 'flex',
-    borderBottom: '1px solid var(--border)',
-    gap: '0',
-    marginBottom: '4px',
-  },
-  tab: {
-    flex: 1,
-    padding: '10px',
-    background: 'transparent',
-    border: 'none',
-    borderBottom: '2px solid transparent',
-    color: 'var(--text-muted)',
-    cursor: 'pointer',
-    fontFamily: 'var(--font-sans)',
-    fontSize: '13px',
-    fontWeight: 500,
-    transition: 'all 0.2s',
-    marginBottom: '-1px',
-  },
-  tabActive: {
-    color: 'var(--accent)',
-    borderBottomColor: 'var(--accent)',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  error: {
-    background: 'rgba(252, 129, 129, 0.08)',
-    border: '1px solid rgba(252, 129, 129, 0.2)',
-    borderRadius: '6px',
-    padding: '10px 14px',
-    fontSize: '13px',
-    color: 'var(--red)',
-  },
-  demo: {
-    textAlign: 'center',
-    fontSize: '12px',
-    color: 'var(--text-dim)',
-  },
-  code: {
-    fontFamily: 'var(--font-mono)',
-    color: 'var(--text-muted)',
-    fontSize: '12px',
-  },
-  footer: {
-    fontSize: '11px',
-    color: 'var(--text-dim)',
-    textAlign: 'center',
-    maxWidth: '320px',
-  },
+  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative', overflow: 'hidden' },
+  bg: { position: 'fixed', inset: 0, background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,179,237,0.06) 0%, transparent 70%)', pointerEvents: 'none' },
+  wrapper: { width: '100%', maxWidth: '420px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' },
+  logo: { display: 'flex', alignItems: 'center', gap: '10px' },
+  logoMark: { fontSize: '28px', color: 'var(--accent)', lineHeight: 1 },
+  logoText: { fontFamily: 'var(--font-mono)', fontSize: '24px', fontWeight: 500, letterSpacing: '0.18em', color: 'var(--text)' },
+  tagline: { fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '-12px' },
+  card: { width: '100%', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' },
+  tabs: { display: 'flex', borderBottom: '1px solid var(--border)', gap: '0', marginBottom: '4px' },
+  tab: { flex: 1, padding: '10px', background: 'transparent', border: 'none', borderBottom: '2px solid transparent', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 500, transition: 'all 0.2s', marginBottom: '-1px' },
+  tabActive: { color: 'var(--accent)', borderBottomColor: 'var(--accent)' },
+  form: { display: 'flex', flexDirection: 'column', gap: '16px' },
+  forgotLink: { fontSize: '12px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 400, opacity: 0.8 },
+  error: { background: 'rgba(252, 129, 129, 0.08)', border: '1px solid rgba(252, 129, 129, 0.2)', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', color: 'var(--red)' },
+  demo: { textAlign: 'center', fontSize: '12px', color: 'var(--text-dim)' },
+  code: { fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: '12px' },
+  footer: { fontSize: '11px', color: 'var(--text-dim)', textAlign: 'center', maxWidth: '320px' },
 };

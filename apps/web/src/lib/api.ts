@@ -1,8 +1,7 @@
 // Usa proxy relativo do Next.js para evitar CORS
-// next.config.js já redireciona /api/* → localhost:3001/api/*
 const API_URL = typeof window !== 'undefined'
-  ? ''   // no browser: usa proxy relativo /api/...
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'); // no SSR: direto
+  ? ''
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -35,6 +34,19 @@ export const api = {
         method: 'POST', body: JSON.stringify({ email, password, full_name }),
       }),
     me: () => apiRequest<{ user: User; subscription: any }>('/api/auth/me'),
+
+    forgotPassword: (email: string) =>
+      apiRequest<{ message: string }>('/api/auth/forgot-password', {
+        method: 'POST', body: JSON.stringify({ email }),
+      }),
+
+    resetPassword: (token: string, password: string) =>
+      apiRequest<{ message: string; token: string; user: User }>('/api/auth/reset-password', {
+        method: 'POST', body: JSON.stringify({ token, password }),
+      }),
+
+    validateResetToken: (token: string) =>
+      apiRequest<{ valid: boolean }>(`/api/auth/validate-reset-token?token=${encodeURIComponent(token)}`),
   },
 
   verify: {
@@ -78,18 +90,12 @@ export interface VerifyInput {
   email?: string; phone?: string; username?: string; cpf?: string; birth_date?: string;
 }
 export interface VerifyResult {
-  verification_id: string; report_id: string;
-  trust_score: { total: number; level: string; identity: number; social: number; behavioral: number; consistency: number };
-  explanation: any; ai_analysis: any; created_at: string;
-  credits_remaining?: number;
-}
-export interface Report {
-  id: string; title: string; summary: string; total_score: number;
-  level: string; is_premium: boolean; created_at: string; pdf_generated?: boolean;
-  subject_email?: string; subject_phone?: string; subject_username?: string; explanation?: any;
-  identity_score: number; social_score: number; behavioral_score: number; consistency_score: number;
+  report_id: string; score: number; level: string; summary: string; signals: Signal[];
 }
 export interface Signal {
-  signal_type: string; signal_name: string; value: any;
-  weight: number; score_contribution: number; source: string; created_at: string;
+  id: string; source: string; label: string; value: string;
+  status: 'verified' | 'warning' | 'not_found'; weight: number;
+}
+export interface Report {
+  id: string; target_email: string; score: number; level: string; created_at: string;
 }
