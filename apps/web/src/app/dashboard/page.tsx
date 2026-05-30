@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { ScoreRing } from '@/components/ScoreRing';
-import { Card, StatCard, Badge, SkeletonCard, EmptyState, Button, ScoreBar } from '@/components/ui/index';
+import { Card, StatCard, Badge, SkeletonCard, EmptyState, Button } from '@/components/ui/index';
 import { api, Report } from '@/lib/api';
 
 const LEVEL_BADGE: Record<string, any> = {
@@ -43,34 +43,36 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-4 px-0 sm:px-0">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
               Olá, {user.full_name.split(' ')[0]} 👋
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">Painel de análises de confiança digital</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Painel de análises de confiança digital</p>
           </div>
-          {user.credits > 0 || user.credits === 999 ? (
-            <Link href="/verify">
-              <Button size="md">+ Nova Verificação</Button>
-            </Link>
-          ) : (
-            <Link href="/settings">
-              <Button size="md" variant="danger">⚠ Sem créditos — Adquirir</Button>
-            </Link>
-          )}
+          <div className="flex-shrink-0">
+            {user.credits > 0 || user.credits === 999 ? (
+              <Link href="/verify">
+                <Button size="sm">+ Nova</Button>
+              </Link>
+            ) : (
+              <Link href="/settings">
+                <Button size="sm" variant="danger">⚠ Créditos</Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total de verificações" value={stats.total} icon="🔍" color="blue" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard label="Verificações" value={stats.total} icon="🔍" color="blue" />
           <StatCard label="Score médio" value={stats.avg || '—'} icon="📊" color="purple" />
           <StatCard label="Alta confiança" value={stats.high} icon="✓" color="green" />
           <StatCard
-            label="Plano atual"
+            label="Plano"
             value={user.plan === 'premium' ? 'Pro' : user.plan === 'enterprise' ? 'Power' : 'Grátis'}
             icon="⭐"
             color="amber"
@@ -79,12 +81,12 @@ export default function DashboardPage() {
 
         {/* Relatórios recentes */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500">
               Verificações recentes
             </h2>
             <Link href="/history" className="text-xs text-blue-600 hover:underline">
-              Ver histórico completo →
+              Ver tudo →
             </Link>
           </div>
 
@@ -95,49 +97,49 @@ export default function DashboardPage() {
               <EmptyState
                 icon="🔍"
                 title="Nenhuma verificação ainda"
-                description="Inicie sua primeira análise de presença digital para gerar relatórios aqui."
+                description="Inicie sua primeira análise de presença digital."
                 action={<Link href="/verify"><Button size="md">Fazer primeira verificação</Button></Link>}
               />
             </Card>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {reports.slice(0, 8).map(report => (
                 <Link key={report.id} href={`/report/${report.id}`} className="block group">
                   <Card hover>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <div className="flex-shrink-0">
-                        <ScoreRing score={Math.round(report.total_score)} level={report.level} size={56} />
+                        <ScoreRing score={Math.round(report.total_score)} level={report.level} size={48} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <p className="text-sm font-semibold text-gray-900 truncate">{report.title}</p>
+                        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                          <p className="text-sm font-semibold text-gray-900 truncate max-w-[140px] sm:max-w-none">{report.title}</p>
                           <Badge variant={LEVEL_BADGE[report.level] || 'gray'}>
                             {LEVEL_LABEL[report.level]}
                           </Badge>
                         </div>
-                        <div className="flex flex-wrap gap-1.5 mb-1">
+                        <div className="flex flex-wrap gap-1 mb-0.5">
                           {report.subject_email && (
-                            <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded font-mono border border-gray-100">
+                            <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded font-mono border border-gray-100 truncate max-w-[120px]">
                               ✉ {report.subject_email}
                             </span>
                           )}
                           {report.subject_username && (
-                            <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded font-mono border border-gray-100">
+                            <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded font-mono border border-gray-100">
                               @ {report.subject_username}
                             </span>
                           )}
                           {report.subject_phone && (
-                            <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded font-mono border border-gray-100">
+                            <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded font-mono border border-gray-100">
                               ☎ {report.subject_phone}
                             </span>
                           )}
                         </div>
                         {report.summary && (
-                          <p className="text-xs text-gray-400 truncate">{report.summary}</p>
+                          <p className="text-[11px] text-gray-400 truncate hidden sm:block">{report.summary}</p>
                         )}
                       </div>
-                      <div className="flex-shrink-0 text-right ml-4">
-                        <p className="text-xs text-gray-400 font-mono">
+                      <div className="flex-shrink-0 text-right">
+                        <p className="text-[10px] text-gray-400 font-mono">
                           {new Date(report.created_at).toLocaleDateString('pt-BR')}
                         </p>
                         <span className="text-gray-300 group-hover:text-blue-500 transition-colors text-sm mt-1 block">→</span>
@@ -150,29 +152,27 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Status do sistema */}
+        {/* Status */}
         <Card>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <p className="text-sm font-semibold text-gray-700 mb-0.5">Status dos serviços</p>
-              <p className="text-xs text-gray-400">Verificação em tempo real das integrações</p>
-            </div>
-            <div className="flex items-center gap-5 flex-wrap">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <p className="text-sm font-semibold text-gray-700">Status dos serviços</p>
+            <div className="flex items-center gap-3 flex-wrap">
               {[
-                { label: 'API Backend',   ok: true },
-                { label: 'Gemini AI',     ok: true },
-                { label: 'Instagram API', ok: true },
-                { label: 'Consulta Jurídica',   ok: true },
-                { label: 'Banco de dados', ok: true },
+                { label: 'API', ok: true },
+                { label: 'IA', ok: true },
+                { label: 'Instagram', ok: true },
+                { label: 'Jurídico', ok: true },
+                { label: 'Banco', ok: true },
               ].map(s => (
-                <div key={s.label} className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-full ${s.ok ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
-                  <span className="text-xs text-gray-500">{s.label}</span>
+                <div key={s.label} className="flex items-center gap-1">
+                  <div className={`w-1.5 h-1.5 rounded-full ${s.ok ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
+                  <span className="text-[11px] text-gray-500">{s.label}</span>
                 </div>
               ))}
             </div>
           </div>
         </Card>
+
       </div>
     </AppLayout>
   );
