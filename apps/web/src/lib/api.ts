@@ -97,5 +97,5 @@ export interface Signal {
   status: 'verified' | 'warning' | 'not_found'; weight: number;
 }
 export interface Report {
-  id: string; target_email: string; score: number; total_score: number; level: string; created_at: string;
+  id: string; target_email: string; score: number; total_score: number; title: string; level: string; summary?: string; created_at: string;
 }
