@@ -265,7 +265,7 @@ const S: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', paddingTop: '80px', paddingBottom: '60px', position: 'relative', background: 'linear-gradient(135deg, #020817 0%, #0a1628 100%)' },
   bg: { position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(56,189,248,0.05) 0%, transparent 70%)' },
   wrapper: { maxWidth: '940px', margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' },
-  grid: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: '24px', alignItems: 'start' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' },
   summaryCol: { display: 'flex', flexDirection: 'column', gap: '20px' },
   paymentCol: { background: 'rgba(10,22,40,0.7)', border: '1px solid rgba(56,189,248,0.12)', borderRadius: '20px', padding: 'clamp(20px,4vw,32px)', backdropFilter: 'blur(10px)' },
   sectionLabel: { fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(56,189,248,0.7)', fontFamily: 'monospace', marginBottom: '16px' },
