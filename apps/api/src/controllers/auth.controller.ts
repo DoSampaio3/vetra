@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { z } from 'zod';
 import { queryOne, query } from '../database/connection';
 import { rateLimiter, auditLog } from '../middleware/security.middleware';
@@ -14,15 +14,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'vetra_dev_secret';
 const JWT_EXPIRES = '7d';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-const transporter = nodemailer.createTransport({
+const resend = new Resend(process.env.RESEND_API_KEY); /*
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: Number(process.env.SMTP_PORT) || 465,
   secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+*/
 
 const RegisterSchema = z.object({
   email: z.string().email('Email inválido').max(255),
@@ -136,15 +132,18 @@ authRouter.post('/forgot-password',
     try {
       const { email } = ForgotSchema.parse(req.body);
       const user = await queryOne<{ id: string; full_name: string }>('SELECT id, full_name FROM users WHERE email = $1', [email.toLowerCase()]);
-      if (!user) return res.json({ message: 'Se este email estiver cadastrado, você receberá as instruções em breve.' });
+      if (!user) return if (emailError) { console.error('[forgot-password] Resend:', emailError); return res.status(500).json({ error: 'Erro ao enviar email.' }); }
+      if (emailError) { console.error('[forgot-password] Resend:', emailError); return res.status(500).json({ error: 'Erro ao enviar email.' }); }
+      if(emailError){console.error(emailError);return res.status(500).json({error:"Erro ao enviar email."});}
+      res.json({message:"Se este email estiver cadastrado, você receberá as instruções em breve."});
 
       const resetToken = crypto.randomBytes(32).toString('hex');
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
       await query('UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3', [resetToken, expiresAt, user.id]);
 
       const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
-      await transporter.sendMail({
-        from: `"Vetra" <${process.env.SMTP_USER}>`,
+      const { error: emailError } = await resend.emails.send({
+        from: "Vetra <onboarding@resend.dev>",
         to: email,
         subject: 'Redefinição de senha — Vetra',
         html: `
