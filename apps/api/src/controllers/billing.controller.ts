@@ -14,7 +14,7 @@ const PLAN_PRICES: Record<string, { plan: string; credits: number; value: number
 };
 
 async function asaasRequest(path: string, method = 'GET', body?: object): Promise<any> {
-  if (!ASAAS_API_KEY) throw new Error('ASAAS_API_KEY não configurada');
+  if (!ASAAS_API_KEY) throw new Error('ASAAS_API_KEY nao configurada');
   const res = await fetch(`${ASAAS_BASE_URL}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json', access_token: ASAAS_API_KEY },
@@ -39,44 +39,73 @@ async function getOrCreateCustomer(email: string, name: string, userId: string, 
 
 billingRouter.post('/create-checkout', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    if (!ASAAS_API_KEY) return res.status(503).json({ error: 'Pagamentos não configurados.' });
+    if (!ASAAS_API_KEY) return res.status(503).json({ error: 'Pagamentos nao configurados.' });
     const { plan_key, billing_type, cpf } = req.body as { plan_key: string; billing_type?: string; cpf?: string };
     const planConfig = PLAN_PRICES[plan_key];
-    if (!planConfig) return res.status(400).json({ error: 'Plano inválido.' });
+    if (!planConfig) return res.status(400).json({ error: 'Plano invalido.' });
     const user = await queryOne<{ email: string; full_name: string; asaas_customer_id?: string }>(
       `SELECT u.email, u.full_name, s.asaas_customer_id FROM users u LEFT JOIN subscriptions s ON s.user_id = u.id WHERE u.id = $1 ORDER BY s.created_at DESC LIMIT 1`,
       [req.user!.id]
     );
-    console.log('[debug] cpf recebido:', cpf);
     const customerId = user?.asaas_customer_id || await getOrCreateCustomer(user?.email || '', user?.full_name || 'Cliente Vetra', req.user!.id, cpf);
     const isRecurring = plan_key !== 'explorer';
     const paymentType = billing_type || 'PIX';
-    let checkoutUrl: string;
+    const dueDate = new Date(Date.now() + 86400000).toISOString().split('T')[0];
     let paymentId: string;
+    let checkoutUrl = '';
+    let pixQrCode = '';
+    let pixKey = '';
     if (isRecurring) {
       const subscription = await asaasRequest('/subscriptions', 'POST', {
         customer: customerId, billingType: paymentType, value: planConfig.value,
-        nextDueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-        cycle: 'MONTHLY', description: planConfig.description,
+        nextDueDate: dueDate, cycle: 'MONTHLY', description: planConfig.description,
         externalReference: JSON.stringify({ vetra_user_id: req.user!.id, plan_key }),
         redirectLink: `${process.env.FRONTEND_URL}/dashboard?payment=success&plan=${plan_key}`,
       });
       paymentId = subscription.id;
       const payments = await asaasRequest(`/payments?subscription=${subscription.id}`);
-      checkoutUrl = payments?.data?.[0]?.invoiceUrl || `${process.env.FRONTEND_URL}/checkout?plan=${plan_key}&pending=true`;
+      const firstPayment = payments?.data?.[0];
+      if (paymentType === 'PIX' && firstPayment?.id) {
+        try {
+          const pixData = await asaasRequest(`/payments/${firstPayment.id}/pixQrCode`);
+          pixQrCode = pixData?.encodedImage || '';
+          pixKey = pixData?.payload || '';
+        } catch {}
+      }
+      checkoutUrl = firstPayment?.invoiceUrl || '';
     } else {
       const payment = await asaasRequest('/payments', 'POST', {
         customer: customerId, billingType: paymentType, value: planConfig.value,
-        dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-        description: planConfig.description,
+        dueDate, description: planConfig.description,
         externalReference: JSON.stringify({ vetra_user_id: req.user!.id, plan_key }),
       });
       paymentId = payment.id;
+      if (paymentType === 'PIX') {
+        try {
+          const pixData = await asaasRequest(`/payments/${payment.id}/pixQrCode`);
+          pixQrCode = pixData?.encodedImage || '';
+          pixKey = pixData?.payload || '';
+        } catch {}
+      }
       checkoutUrl = payment.invoiceUrl || payment.bankSlipUrl || '';
     }
-    res.json({ checkout_url: checkoutUrl, payment_id: paymentId });
+    res.json({ checkout_url: checkoutUrl, payment_id: paymentId, pix_qr_code: pixQrCode, pix_key: pixKey });
   } catch (err: any) {
     console.error('[billing/create-checkout]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+billingRouter.get('/payment-status/:paymentId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { paymentId } = req.params;
+    const sub = await queryOne<{ status: string; plan: string }>(
+      `SELECT status, plan FROM subscriptions WHERE (asaas_payment_id=$1 OR asaas_subscription_id=$1) AND user_id=$2`,
+      [paymentId, req.user!.id]
+    );
+    if (sub?.status === 'active') return res.json({ confirmed: true, plan: sub.plan });
+    res.json({ confirmed: false });
+  } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -110,7 +139,6 @@ billingRouter.post('/webhook', async (req: Request, res: Response) => {
         } else {
           await query('UPDATE users SET plan=$1, credits=$2 WHERE id=$3', [planConfig.plan, planConfig.credits, userId]);
         }
-        console.log(`✅ Pagamento confirmado: user ${userId} → ${planConfig.plan}`);
         break;
       }
       case 'PAYMENT_OVERDUE':
@@ -143,11 +171,11 @@ billingRouter.get('/subscription', authMiddleware, async (req: AuthenticatedRequ
 
 billingRouter.post('/cancel', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    if (!ASAAS_API_KEY) return res.status(503).json({ error: 'Asaas não configurado.' });
+    if (!ASAAS_API_KEY) return res.status(503).json({ error: 'Asaas nao configurado.' });
     const sub = await queryOne<{ asaas_subscription_id: string }>("SELECT asaas_subscription_id FROM subscriptions WHERE user_id=$1 AND status='active'", [req.user!.id]);
     if (!sub) return res.status(404).json({ error: 'Nenhuma assinatura ativa.' });
     await asaasRequest(`/subscriptions/${sub.asaas_subscription_id}`, 'DELETE');
     await query('UPDATE subscriptions SET cancel_at_period_end=true WHERE asaas_subscription_id=$1', [sub.asaas_subscription_id]);
-    res.json({ ok: true, message: 'Assinatura será cancelada ao fim do período.' });
+    res.json({ ok: true, message: 'Assinatura sera cancelada ao fim do periodo.' });
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
