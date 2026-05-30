@@ -34,44 +34,36 @@ export const api = {
         method: 'POST', body: JSON.stringify({ email, password, full_name }),
       }),
     me: () => apiRequest<{ user: User; subscription: any }>('/api/auth/me'),
-
     forgotPassword: (email: string) =>
       apiRequest<{ message: string }>('/api/auth/forgot-password', {
         method: 'POST', body: JSON.stringify({ email }),
       }),
-
     resetPassword: (token: string, password: string) =>
       apiRequest<{ message: string; token: string; user: User }>('/api/auth/reset-password', {
         method: 'POST', body: JSON.stringify({ token, password }),
       }),
-
     validateResetToken: (token: string) =>
       apiRequest<{ valid: boolean }>(`/api/auth/validate-reset-token?token=${encodeURIComponent(token)}`),
   },
-
   verify: {
     submit: (data: VerifyInput) =>
       apiRequest<VerifyResult>('/api/verify', { method: 'POST', body: JSON.stringify(data) }),
     analyze: (data: VerifyInput) =>
       apiRequest<any>('/api/verify/signals/analyze', { method: 'POST', body: JSON.stringify(data) }),
   },
-
   score: {
     byUser: (userId: string) => apiRequest<any>(`/api/score/user/${userId}`),
   },
-
   reports: {
     list: () => apiRequest<{ reports: Report[] }>('/api/reports'),
     get: (id: string) => apiRequest<{ report: Report; signals: Signal[] }>(`/api/reports/${id}`),
   },
-
   history: {
     list: (page = 1, limit = 10) =>
       apiRequest<any>(`/api/history?page=${page}&limit=${limit}`),
     delete: (id: string) =>
       apiRequest<any>(`/api/history/${id}`, { method: 'DELETE' }),
   },
-
   billing: {
     createCheckout: (plan_key: string, billing_type?: string, cpf?: string, card?: any) =>
       apiRequest<{ checkout_url: string; payment_id: string; pix_qr_code: string; pix_key: string }>('/api/billing/create-checkout', {
@@ -90,12 +82,18 @@ export interface VerifyInput {
   email?: string; phone?: string; username?: string; cpf?: string; birth_date?: string;
 }
 export interface VerifyResult {
-  report_id: string; score: number; level: string; summary: string; signals: Signal[];
-}
-export interface Signal {
-  id: string; source: string; label: string; value: string;
-  status: 'verified' | 'warning' | 'not_found'; weight: number;
+  verification_id: string; report_id: string;
+  trust_score: { total: number; level: string; identity: number; social: number; behavioral: number; consistency: number };
+  explanation: any; ai_analysis: any; created_at: string;
+  credits_remaining?: number;
 }
 export interface Report {
-  id: string; target_email: string; score: number; total_score: number; title: string; level: string; summary?: string; subject_email?: string; subject_phone?: string; subject_username?: string; explanation?: any; created_at: string;
+  id: string; title: string; summary: string; total_score: number;
+  level: string; is_premium: boolean; created_at: string; pdf_generated?: boolean;
+  subject_email?: string; subject_phone?: string; subject_username?: string; explanation?: any;
+  identity_score: number; social_score: number; behavioral_score: number; consistency_score: number;
+}
+export interface Signal {
+  signal_type: string; signal_name: string; value: any;
+  weight: number; score_contribution: number; source: string; created_at: string;
 }
