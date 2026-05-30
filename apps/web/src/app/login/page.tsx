@@ -75,14 +75,7 @@ export default function LoginPage() {
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
             </div>
             <div>
-              <label className="label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Senha</span>
-                {mode === 'entrar' && (
-                  <Link href="/forgot-password" style={styles.forgotLink}>
-                    Esqueci minha senha
-                  </Link>
-                )}
-              </label>
+              <label className="label">Senha</label>
               <input className="input" type="password"
                 placeholder={mode === 'cadastrar' ? 'Mínimo 8 caracteres' : '••••••••'}
                 value={form.password}
@@ -99,9 +92,11 @@ export default function LoginPage() {
           </form>
 
           {mode === 'entrar' && (
-            <p style={styles.demo}>
-              Demo: <code style={styles.code}>demo@vetra.io</code> / <code style={styles.code}>demo1234</code>
-            </p>
+            <div style={styles.bottomLinks}>
+              <Link href="/forgot-password" style={styles.forgotLink}>
+                Esqueci minha senha
+              </Link>
+            </div>
           )}
         </div>
 
@@ -126,9 +121,8 @@ const styles: Record<string, React.CSSProperties> = {
   tab: { flex: 1, padding: '10px', background: 'transparent', border: 'none', borderBottom: '2px solid transparent', color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 500, transition: 'all 0.2s', marginBottom: '-1px' },
   tabActive: { color: 'var(--accent)', borderBottomColor: 'var(--accent)' },
   form: { display: 'flex', flexDirection: 'column', gap: '16px' },
-  forgotLink: { fontSize: '12px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 400, opacity: 0.8 },
+  forgotLink: { fontSize: '13px', color: 'var(--accent)', textDecoration: 'none', opacity: 0.85 },
+  bottomLinks: { textAlign: 'center' as const },
   error: { background: 'rgba(252, 129, 129, 0.08)', border: '1px solid rgba(252, 129, 129, 0.2)', borderRadius: '6px', padding: '10px 14px', fontSize: '13px', color: 'var(--red)' },
-  demo: { textAlign: 'center', fontSize: '12px', color: 'var(--text-dim)' },
-  code: { fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', fontSize: '12px' },
   footer: { fontSize: '11px', color: 'var(--text-dim)', textAlign: 'center', maxWidth: '320px' },
 };
