@@ -1,10 +1,11 @@
 'use client';
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
@@ -21,23 +22,6 @@ export default function ResetPasswordPage() {
       .then(({ valid }) => setTokenValid(valid))
       .catch(() => setTokenValid(false));
   }, [token]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (password.length < 8) return setError('A senha deve ter pelo menos 8 caracteres.');
-    if (password !== confirm) return setError('As senhas não coincidem.');
-    setSubmitting(true);
-    try {
-      const { token: jwtToken } = await api.auth.resetPassword(token, password);
-      localStorage.setItem('vetra_token', jwtToken);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Erro ao redefinir senha.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   function getStrength(p: string): number {
     let s = 0;
@@ -56,6 +40,23 @@ export default function ResetPasswordPage() {
     return 'var(--accent)';
   }
   const strengthLabels = ['', 'Fraca', 'Razoável', 'Boa', 'Forte'];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (password.length < 8) return setError('A senha deve ter pelo menos 8 caracteres.');
+    if (password !== confirm) return setError('As senhas não coincidem.');
+    setSubmitting(true);
+    try {
+      const { token: jwtToken } = await api.auth.resetPassword(token, password);
+      localStorage.setItem('vetra_token', jwtToken);
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Erro ao redefinir senha.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (tokenValid === null) {
     return (
@@ -97,7 +98,6 @@ export default function ResetPasswordPage() {
       <div style={styles.wrapper} className="animate-in">
         <div style={styles.logo}><span style={styles.logoMark}>◈</span><span style={styles.logoText}>VETRA</span></div>
         <p style={styles.tagline}>Sinais de Confiança Digital</p>
-
         <div style={styles.card}>
           <div>
             <h2 style={styles.title}>Criar nova senha</h2>
@@ -105,14 +105,12 @@ export default function ResetPasswordPage() {
               Escolha uma senha segura com pelo menos 8 caracteres.
             </p>
           </div>
-
           <form onSubmit={handleSubmit} style={styles.form}>
             <div>
               <label className="label">Nova senha</label>
               <input className="input" type="password" placeholder="Mínimo 8 caracteres"
                 value={password} onChange={e => setPassword(e.target.value)} required autoFocus />
             </div>
-
             {password.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 {[1,2,3,4].map(i => (
@@ -123,15 +121,12 @@ export default function ResetPasswordPage() {
                 </span>
               </div>
             )}
-
             <div>
               <label className="label">Confirmar nova senha</label>
               <input className="input" type="password" placeholder="Repita a senha"
                 value={confirm} onChange={e => setConfirm(e.target.value)} required />
             </div>
-
             {error && <p style={styles.error}>{error}</p>}
-
             <button type="submit" className="btn btn-primary"
               style={{ width: '100%', justifyContent: 'center' }} disabled={submitting}>
               {submitting ? 'Salvando...' : 'Salvar nova senha'}
@@ -140,6 +135,18 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Carregando...</p>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
 
