@@ -11,12 +11,11 @@ const PLANS: Record<string, { name: string; price: string; priceValue: string; p
   power: { name: 'Vetra Power', price: 'R$ 197,90', priceValue: '197,90', period: '/mês', color: '#a78bfa', description: 'Pesquisas ilimitadas com API e prioridade total', features: ['Pesquisas ilimitadas', 'IA avançada (Gemini Pro)', 'Verificação Instagram real', 'Consulta Datajud CNJ', 'Histórico ilimitado', 'PDF + API access', 'Dashboard premium', 'Suporte dedicado'] },
 };
 
-type BillingType = 'PIX' | 'BOLETO' | 'CREDIT_CARD';
+type BillingType = 'PIX' | 'CREDIT_CARD';
 type Step = 'form' | 'pix';
 
 const PAYMENT_METHODS: { key: BillingType; label: string; icon: string; desc: string }[] = [
   { key: 'PIX', label: 'Pix', icon: '⚡', desc: 'Aprovação em segundos · 24h por dia' },
-  { key: 'BOLETO', label: 'Boleto', icon: '🧾', desc: 'Vence em 3 dias úteis' },
   { key: 'CREDIT_CARD', label: 'Cartão de Crédito', icon: '💳', desc: 'Débito imediato' },
 ];
 
@@ -138,6 +137,7 @@ function CheckoutForm() {
   const [billingType, setBillingType] = useState<BillingType>('PIX');
   const [cpf, setCpf] = useState('');
   const [step, setStep] = useState<Step>('form');
+  const [card, setCard] = useState({ holderName: '', number: '', expiryMonth: '', expiryYear: '', ccv: '', postalCode: '', addressNumber: '' });
   const [pixData, setPixData] = useState<{ qrCode: string; pixKey: string; paymentId: string } | null>(null);
 
   const handlePay = async () => {
@@ -147,7 +147,7 @@ function CheckoutForm() {
       if (!token) { router.push('/register?plan=' + planKey); return; }
       const cleanCpf = cpf.replace(/\D/g, '');
       if (cleanCpf.length !== 11 && cleanCpf.length !== 14) { setError('CPF ou CNPJ inválido.'); setLoading(false); return; }
-      const res = await api.billing.createCheckout(planKey, billingType, cleanCpf);
+      const res = await api.billing.createCheckout(planKey, billingType, cleanCpf, billingType === 'CREDIT_CARD' ? card : undefined);
       if (billingType === 'PIX' && res.pix_qr_code) {
         setPixData({ qrCode: res.pix_qr_code, pixKey: res.pix_key, paymentId: res.payment_id });
         setStep('pix');
@@ -254,6 +254,49 @@ function CheckoutForm() {
               {loading ? '⏳ Gerando pagamento...' : billingType === 'PIX' ? `⚡ Gerar QR Code Pix — R$ ${plan.priceValue}` : `🔒 Pagar com ${PAYMENT_METHODS.find(m => m.key === billingType)?.label} — R$ ${plan.priceValue}`}
             </button>
             {billingType === 'PIX' && <p style={{ fontSize: '11px', color: 'rgba(100,116,139,0.4)', textAlign: 'center', marginTop: '10px' }}>O QR Code aparecerá aqui nesta página.</p>}
+            {billingType === 'CREDIT_CARD' && (
+              <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={S.sectionLabel}>Dados do cartão</div>
+                {[
+                  { key: 'holderName', label: 'Nome no cartão', placeholder: 'NOME COMO NO CARTÃO' },
+                  { key: 'number', label: 'Número do cartão', placeholder: '0000 0000 0000 0000' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(148,163,184,0.7)', display: 'block', marginBottom: '4px' }}>{f.label}</label>
+                    <input type="text" placeholder={f.placeholder} value={(card as any)[f.key]}
+                      onChange={e => setCard(p => ({ ...p, [f.key]: e.target.value }))}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                ))}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                  {[
+                    { key: 'expiryMonth', label: 'Mês', placeholder: 'MM' },
+                    { key: 'expiryYear', label: 'Ano', placeholder: 'AAAA' },
+                    { key: 'ccv', label: 'CVV', placeholder: '000' },
+                  ].map(f => (
+                    <div key={f.key}>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(148,163,184,0.7)', display: 'block', marginBottom: '4px' }}>{f.label}</label>
+                      <input type="text" placeholder={f.placeholder} value={(card as any)[f.key]}
+                        onChange={e => setCard(p => ({ ...p, [f.key]: e.target.value }))}
+                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  {[
+                    { key: 'postalCode', label: 'CEP', placeholder: '00000-000' },
+                    { key: 'addressNumber', label: 'Número', placeholder: '123' },
+                  ].map(f => (
+                    <div key={f.key}>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(148,163,184,0.7)', display: 'block', marginBottom: '4px' }}>{f.label}</label>
+                      <input type="text" placeholder={f.placeholder} value={(card as any)[f.key]}
+                        onChange={e => setCard(p => ({ ...p, [f.key]: e.target.value }))}
+                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

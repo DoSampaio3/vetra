@@ -61,9 +61,9 @@ export const api = {
   },
 
   billing: {
-    createCheckout: (plan_key: string, billing_type?: string, cpf?: string) =>
+    createCheckout: (plan_key: string, billing_type?: string, cpf?: string, card?: any) =>
       apiRequest<{ checkout_url: string; payment_id: string; pix_qr_code: string; pix_key: string }>('/api/billing/create-checkout', {
-        method: 'POST', body: JSON.stringify({ plan_key, billing_type, cpf }),
+        method: 'POST', body: JSON.stringify({ plan_key, billing_type, cpf, card }),
       }),
     getSubscription: () => apiRequest<any>('/api/billing/subscription'),
     cancel: () => apiRequest<any>('/api/billing/cancel', { method: 'POST' }),

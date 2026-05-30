@@ -40,7 +40,7 @@ async function getOrCreateCustomer(email: string, name: string, userId: string, 
 billingRouter.post('/create-checkout', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!ASAAS_API_KEY) return res.status(503).json({ error: 'Pagamentos nao configurados.' });
-    const { plan_key, billing_type, cpf } = req.body as { plan_key: string; billing_type?: string; cpf?: string };
+    const { plan_key, billing_type, cpf, card } = req.body as { plan_key: string; billing_type?: string; cpf?: string; card?: any };
     const planConfig = PLAN_PRICES[plan_key];
     if (!planConfig) return res.status(400).json({ error: 'Plano invalido.' });
     const user = await queryOne<{ email: string; full_name: string; asaas_customer_id?: string }>(
@@ -61,6 +61,10 @@ billingRouter.post('/create-checkout', authMiddleware, async (req: Authenticated
         nextDueDate: dueDate, cycle: 'MONTHLY', description: planConfig.description,
         externalReference: JSON.stringify({ vetra_user_id: req.user!.id, plan_key }),
         redirectLink: `${process.env.FRONTEND_URL}/dashboard?payment=success&plan=${plan_key}`,
+        ...(paymentType === 'CREDIT_CARD' && card ? {
+          creditCard: { holderName: card.holderName, number: card.number.replace(/\s/g,''), expiryMonth: card.expiryMonth, expiryYear: card.expiryYear, ccv: card.ccv },
+          creditCardHolderInfo: { name: card.holderName, email: req.user!.email || '', cpfCnpj: cpf || '', postalCode: card.postalCode.replace(/\D/g,''), addressNumber: card.addressNumber, phone: '' }
+        } : {}),
       });
       paymentId = subscription.id;
       const payments = await asaasRequest(`/payments?subscription=${subscription.id}`);
@@ -78,6 +82,10 @@ billingRouter.post('/create-checkout', authMiddleware, async (req: Authenticated
         customer: customerId, billingType: paymentType, value: planConfig.value,
         dueDate, description: planConfig.description,
         externalReference: JSON.stringify({ vetra_user_id: req.user!.id, plan_key }),
+        ...(paymentType === 'CREDIT_CARD' && card ? {
+          creditCard: { holderName: card.holderName, number: card.number.replace(/\s/g,''), expiryMonth: card.expiryMonth, expiryYear: card.expiryYear, ccv: card.ccv },
+          creditCardHolderInfo: { name: card.holderName, email: req.user!.email || '', cpfCnpj: cpf || '', postalCode: card.postalCode.replace(/\D/g,''), addressNumber: card.addressNumber, phone: '' }
+        } : {}),
       });
       paymentId = payment.id;
       if (paymentType === 'PIX') {
