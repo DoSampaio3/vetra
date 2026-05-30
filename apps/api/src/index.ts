@@ -19,22 +19,23 @@ import { securityHeaders, sanitizeBody, rateLimiter } from './middleware/securit
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ── Trust proxy (para pegar IP real atrás de nginx/load balancer) ──
 app.set('trust proxy', 1);
-
-// ── Security headers ──────────────────────────────────────────────
 app.use(securityHeaders);
-app.use(helmet({ contentSecurityPolicy: false })); // CSP já no securityHeaders
+app.use(helmet({ contentSecurityPolicy: false }));
 
-// ── CORS restritivo ───────────────────────────────────────────────
+// ── CORS ──────────────────────────────────────────────────────────
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ];
+
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    if (!origin) return cb(null, true);
+    // Permite qualquer deploy do Vercel do projeto
+    if (origin.endsWith('.vercel.app')) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
     cb(new Error('CORS: origem não permitida'));
   },
   credentials: true,
@@ -42,16 +43,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ── Body parsing — guarda rawBody para webhook Stripe ────────────
-// Asaas usa JSON padrão
 app.use(express.json({ limit: '2mb' }));
 app.use(compression());
 app.use(sanitizeBody);
 
-// ── Rate limiting global ──────────────────────────────────────────
 app.use('/api/', rateLimiter(200, 15 * 60 * 1000, 'Limite de requisições atingido.'));
 
-// ── Health check ──────────────────────────────────────────────────
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -68,18 +65,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ── Rotas públicas ────────────────────────────────────────────────
 app.use('/api/auth', authRouter);
 app.use('/api/billing/webhook', billingRouter);
 
-// ── Rotas autenticadas ────────────────────────────────────────────
 app.use('/api/verify',   authMiddleware, verifyRouter);
 app.use('/api/score',    authMiddleware, scoreRouter);
 app.use('/api/reports',  authMiddleware, reportsRouter);
-app.use('/api/history',  historyRouter); // auth interno
+app.use('/api/history',  historyRouter);
 app.use('/api/billing',  authMiddleware, billingRouter);
 
-// ── Error handler global ──────────────────────────────────────────
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('[ERROR]', err.message);
   const status = err.status || 500;
@@ -88,12 +82,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// ── 404 ───────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Rota não encontrada.' });
 });
 
-// ── Startup ───────────────────────────────────────────────────────
 app.listen(PORT, async () => {
   console.log(`\n🔷 VETRA API v2.0 → http://localhost:${PORT}`);
   console.log(`📊 Health        → http://localhost:${PORT}/health\n`);
