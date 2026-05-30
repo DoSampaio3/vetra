@@ -33,20 +33,8 @@ export default function SettingsPage() {
   };
   const planInfo = planMap[user.plan] || planMap.free;
 
-  const handleUpgrade = async (planKey: string) => {
-    setLoadingCheckout(planKey);
-    setMsg('');
-    try {
-      const res = await api.billing.createCheckout(planKey);
-      if (res.checkout_url) {
-        window.location.href = res.checkout_url;
-      } else {
-        setMsg('Stripe não configurado. Configure STRIPE_SECRET_KEY no backend.');
-      }
-    } catch (err: any) {
-      setMsg(err.message);
-    }
-    setLoadingCheckout(null);
+  const handleUpgrade = (planKey: string) => {
+    window.location.href = '/checkout?plan=' + planKey;
   };
 
   const handleCancel = async () => {
