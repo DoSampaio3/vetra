@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { Resend } from 'resend';
+import axios from 'axios';
 import { z } from 'zod';
 import { queryOne, query } from '../database/connection';
 import { rateLimiter, auditLog } from '../middleware/security.middleware';
@@ -13,7 +13,6 @@ export const authRouter = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'vetra_dev_secret';
 const JWT_EXPIRES = '7d';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const RegisterSchema = z.object({
   email: z.string().email('Email inválido').max(255),
@@ -135,22 +134,19 @@ authRouter.post('/forgot-password',
 
       const resetUrl = FRONTEND_URL + '/reset-password?token=' + resetToken;
 
-      const { error: emailError } = await resend.emails.send({
-        from: 'Vetra <onboarding@resend.dev>',
-        to: email,
+      await axios.post('https://api.brevo.com/v3/smtp/email', {
+        sender: { name: 'Vetra', email: 'techvetra9@gmail.com' },
+        to: [{ email: email }],
         subject: 'Redefinição de senha — Vetra',
-        html: '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0d1117;color:#e6edf3;border-radius:12px;"><div style="text-align:center;margin-bottom:24px;"><span style="font-family:monospace;font-size:20px;letter-spacing:0.15em;">VETRA</span></div><h2 style="font-size:18px;font-weight:600;margin-bottom:8px;">Redefinir sua senha</h2><p style="color:#8b949e;font-size:14px;line-height:1.6;margin-bottom:24px;">Ola, ' + user.full_name + '! Recebemos uma solicitacao para redefinir a senha da sua conta. O link expira em 1 hora.</p><a href="' + resetUrl + '" style="display:inline-block;background:#63b3ed;color:#0d1117;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Redefinir senha</a><p style="color:#484f58;font-size:12px;margin-top:24px;">Se voce nao solicitou isso, ignore este email.</p></div>',
+        htmlContent: '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0d1117;color:#e6edf3;border-radius:12px;"><div style="text-align:center;margin-bottom:24px;"><span style="font-family:monospace;font-size:20px;letter-spacing:0.15em;">VETRA</span></div><h2 style="font-size:18px;font-weight:600;margin-bottom:8px;">Redefinir sua senha</h2><p style="color:#8b949e;font-size:14px;line-height:1.6;margin-bottom:24px;">Ola, ' + user.full_name + '! Recebemos uma solicitacao para redefinir a senha. O link expira em 1 hora.</p><a href="' + resetUrl + '" style="display:inline-block;background:#63b3ed;color:#0d1117;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Redefinir senha</a><p style="color:#484f58;font-size:12px;margin-top:24px;">Se voce nao solicitou isso, ignore este email.</p></div>',
+      }, {
+        headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
       });
-
-      if (emailError) {
-        console.error('[forgot-password] Resend error:', JSON.stringify(emailError));
-        return res.status(500).json({ error: 'Erro ao enviar email. Tente novamente.' });
-      }
 
       res.json({ message: 'Se este email estiver cadastrado, você receberá as instruções em breve.' });
     } catch (err: any) {
       if (err instanceof z.ZodError) return res.status(400).json({ error: err.errors[0]?.message });
-      console.error('[forgot-password]', err.message);
+      console.error('[forgot-password]', err.response?.data || err.message);
       res.status(500).json({ error: 'Erro ao enviar email. Tente novamente.' });
     }
   }
