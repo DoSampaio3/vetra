@@ -102,6 +102,11 @@ function RegisterForm() {
             </div>
 
             {error && <p style={styles.error}>{error}</p>}
+            {mode === "login" && (
+              <div style={{textAlign:"center"}}>
+                <a href="/forgot-password" style={{fontSize:"12px",color:"var(--accent)",textDecoration:"none",opacity:0.8}}>Esqueci minha senha</a>
+              </div>
+            )}
 
             <button type="submit" disabled={submitting} style={{
               ...styles.cta,
