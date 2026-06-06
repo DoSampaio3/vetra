@@ -153,7 +153,8 @@ billingRouter.post('/webhook', async (req: Request, res: Response) => {
         await query("UPDATE subscriptions SET status='past_due' WHERE asaas_payment_id=$1", [payment.id]);
         break;
       case 'SUBSCRIPTION_DELETED':
-      case 'SUBSCRIPTION_CANCELED': {
+case 'SUBSCRIPTION_INACTIVATED':
+case 'SUBSCRIPTION_CANCELED':  {
         const sub = await queryOne<{ user_id: string }>('SELECT user_id FROM subscriptions WHERE asaas_subscription_id=$1', [payment.subscription]);
         if (sub) {
           await query("UPDATE subscriptions SET status='canceled', cancel_at_period_end=true WHERE asaas_subscription_id=$1", [payment.subscription]);
