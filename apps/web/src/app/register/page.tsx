@@ -37,7 +37,7 @@ function RegisterForm() {
         localStorage.setItem('vetra_token', token);
       }
       // Redireciona para checkout com plano selecionado
-      router.push(`/checkout?plan=${planKey}`);
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
     } finally {
