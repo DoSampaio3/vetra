@@ -202,26 +202,41 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               />
             </div>
           </div>
-          {/* Mobile: logo + credits */}
+          {/* Mobile: logo + créditos compacto */}
           <div className="flex md:hidden items-center gap-2 flex-1">
             <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: 'linear-gradient(135deg,#1d4ed8,#0891b2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ color: 'white', fontSize: '11px', fontWeight: 700 }}>V</span>
             </div>
             <span style={{ fontWeight: 700, fontSize: '15px', color: '#111827' }}>Vetra</span>
-            <div style={{
-              marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px',
-              padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600,
-              background: isLowCredits ? '#FEF2F2' : '#EFF6FF',
-              color: isLowCredits ? '#dc2626' : '#2563EB',
-              border: `1px solid ${isLowCredits ? '#fecaca' : '#bfdbfe'}`,
-            }}>
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: isLowCredits ? '#ef4444' : '#3b82f6' }} />
-              {isUnlimited ? '∞' : `${credits} crédito${credits !== 1 ? 's' : ''}`}
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '4px',
+                padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700,
+                background: isLowCredits ? '#FEF2F2' : '#EFF6FF',
+                color: isLowCredits ? '#dc2626' : '#2563EB',
+                border: `1px solid ${isLowCredits ? '#fecaca' : '#bfdbfe'}`,
+                fontFamily: 'monospace',
+              }}>
+                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: isLowCredits ? '#ef4444' : '#3b82f6' }} />
+                {isUnlimited ? '∞' : credits}
+                <span style={{ fontSize: '9px', fontFamily: 'inherit', fontWeight: 500, opacity: 0.8 }}>
+                  {' '}cr.
+                </span>
+              </div>
+              <div style={{
+                width: '28px', height: '28px', borderRadius: '50%',
+                background: '#2563EB', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
+              }}>
+                <span style={{ color: 'white', fontSize: '11px', fontWeight: 700 }}>
+                  {user?.full_name?.charAt(0).toUpperCase()}
+                </span>
+              </div>
             </div>
           </div>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Credits badge */}
+          {/* Desktop: badges + comprar + avatar */}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }} className="hidden md:flex">
             <div style={{
               display: 'flex', alignItems: 'center', gap: '5px',
               padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
@@ -255,7 +270,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content */}
-        <main style={{ flex: 1, overflowY: 'auto', minHeight: 0 }} className="p-4 md:p-6 pb-24 md:pb-8">
+        <main style={{ flex: 1, overflowY: 'auto', minHeight: 0 }} className="p-4 md:p-6 pb-20 md:pb-8">
           {children}
         </main>
       </div>
@@ -265,30 +280,34 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         position: 'fixed', bottom: 0, left: 0, right: 0,
         background: 'white', borderTop: '1px solid #E5E7EB',
         display: 'flex', zIndex: 40,
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }} className="md:hidden">
         {navItems.map(item => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link key={item.href} href={item.href} style={{
               flex: 1, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: '3px', padding: '10px 0',
-              fontSize: '10px', fontWeight: 500, textDecoration: 'none',
+              alignItems: 'center', justifyContent: 'center',
+              gap: '2px', padding: '8px 0 10px',
+              fontSize: '9px', fontWeight: active ? 700 : 500,
+              textDecoration: 'none',
               color: active ? '#2563EB' : '#9CA3AF',
+              position: 'relative',
             }}>
-              <span style={{ fontSize: '18px', lineHeight: 1 }}>{item.icon}</span>
-              <span>{item.label}</span>
+              {active && (
+                <span style={{
+                  position: 'absolute', top: 0, left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '20px', height: '2px',
+                  borderRadius: '0 0 3px 3px',
+                  background: '#2563EB',
+                }} />
+              )}
+              <span style={{ fontSize: '19px', lineHeight: 1 }}>{item.icon}</span>
+              <span style={{ textTransform: 'uppercase', letterSpacing: '0.03em' }}>{item.label}</span>
             </Link>
           );
         })}
-        <button onClick={handleLogout} style={{
-          flex: 1, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', gap: '3px', padding: '10px 0',
-          fontSize: '10px', fontWeight: 500, background: 'none',
-          border: 'none', cursor: 'pointer', color: '#9CA3AF',
-        }}>
-          <span style={{ fontSize: '18px', lineHeight: 1 }}>⇥</span>
-          <span>Sair</span>
-        </button>
       </nav>
     </div>
   );

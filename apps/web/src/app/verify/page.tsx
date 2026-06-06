@@ -165,7 +165,7 @@ export default function VerifyPage() {
     <>
       {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-6 pb-8 md:pb-4">
+      <div className="max-w-4xl mx-auto space-y-4 pb-8 md:pb-4">
 
         {/* Header */}
         <div>
@@ -177,11 +177,17 @@ export default function VerifyPage() {
 
         {/* Sem créditos */}
         {user.credits <= 0 && user.credits !== 999 && (
-          <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-xl">
-            <div className="flex items-center gap-2 text-sm text-red-700">
-              <span>⚠</span><span>Você não tem créditos para gerar relatórios.</span>
-            </div>
-            <a href="/settings" className="text-xs font-semibold text-red-700 underline">Adquirir agora →</a>
+          <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+            <span className="text-red-500 text-base flex-shrink-0">⚠</span>
+            <p className="text-xs text-red-700 flex-1 leading-snug">
+              Você não tem créditos para gerar relatórios.
+            </p>
+            
+              href="/settings"
+              className="flex-shrink-0 text-xs font-bold text-white bg-red-500 px-3 py-1.5 rounded-lg whitespace-nowrap"
+            >
+              Adquirir
+            </a>
           </div>
         )}
 
