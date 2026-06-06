@@ -54,7 +54,7 @@ authRouter.post('/register',
 
       const password_hash = await bcrypt.hash(data.password, 12);
       const rows = await query<{ id: string; email: string; full_name: string; plan: string; credits: number; created_at: string }>(
-        `INSERT INTO users (email, password_hash, full_name, plan, credits) VALUES ($1, $2, $3, 'free', 1) RETURNING id, email, full_name, plan, credits, created_at`,
+        `INSERT INTO users (email, password_hash, full_name, plan, credits) VALUES ($1, $2, $3, 'explorer', 1) RETURNING id, email, full_name, plan, credits, created_at`,
         [data.email.toLowerCase(), password_hash, data.full_name.trim()]
       );
       const user = rows[0];

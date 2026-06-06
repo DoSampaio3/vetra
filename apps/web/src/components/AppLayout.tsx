@@ -51,7 +51,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <span style={{ color: 'white', fontWeight: 600, fontSize: '14px', letterSpacing: '0.03em' }}>Vetra</span>
           <span style={{ marginLeft: 'auto', fontSize: '9px', background: 'rgba(37,99,235,0.2)', color: '#60a5fa', padding: '2px 6px', borderRadius: '100px', fontFamily: 'monospace', flexShrink: 0 }}>
-            {user?.plan === 'enterprise' ? 'POWER' : user?.plan === 'premium' ? 'PRO' : 'FREE'}
+            {user?.plan === 'enterprise' ? 'POWER' : user?.plan === 'premium' ? 'PRO' : 'EXPLORAR'}
           </span>
         </div>
 

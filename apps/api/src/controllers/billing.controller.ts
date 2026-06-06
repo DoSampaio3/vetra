@@ -8,7 +8,7 @@ const ASAAS_API_KEY = process.env.ASAAS_API_KEY;
 const ASAAS_BASE_URL = process.env.ASAAS_BASE_URL || 'https://api.asaas.com/v3';
 
 const PLAN_PRICES: Record<string, { plan: string; credits: number; value: number; description: string }> = {
-  explorer: { plan: 'free', credits: 1, value: 49.90, description: 'Vetra Explorer — 1 Relatório Premium' },
+  explorer: { plan: 'explorer', credits: 1, value: 49.90, description: 'Vetra Explorer — 1 Relatório Premium' },
   pro: { plan: 'premium', credits: 10, value: 97.90, description: 'Vetra Pro Insight — 10 Relatórios/mês' },
   power: { plan: 'enterprise', credits: 999, value: 197.90, description: 'Vetra Power — Relatórios Ilimitados' },
 };
@@ -158,7 +158,7 @@ case 'SUBSCRIPTION_CANCELED':  {
         const sub = await queryOne<{ user_id: string }>('SELECT user_id FROM subscriptions WHERE asaas_subscription_id=$1', [payment.subscription]);
         if (sub) {
           await query("UPDATE subscriptions SET status='canceled', cancel_at_period_end=true WHERE asaas_subscription_id=$1", [payment.subscription]);
-          await query("UPDATE users SET plan='free', credits=1 WHERE id=$1", [sub.user_id]);
+          await query("UPDATE users SET plan='explorer', credits=1 WHERE id=$1", [sub.user_id]);
         }
         break;
       }

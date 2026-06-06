@@ -27,11 +27,11 @@ export default function SettingsPage() {
   if (loading || !user) return null;
 
   const planMap: Record<string, { label: string; badge: any; price: string }> = {
-    free:       { label: 'Explorar',    badge: 'gray',  price: 'R$ 49,90 único' },
+    explorer:   { label: 'Explorar',    badge: 'gray',  price: 'R$ 49,90 único' },
     premium:    { label: 'Pro Insight', badge: 'blue',  price: 'R$ 97,90/mês' },
     enterprise: { label: 'Vetra Power', badge: 'green', price: 'R$ 197,90/mês' },
   };
-  const planInfo = planMap[user.plan] || planMap.free;
+  const planInfo = planMap[user.plan] || planMap.explorer;
 
   const handleUpgrade = (planKey: string) => {
     window.location.href = '/checkout?plan=' + planKey;
@@ -137,7 +137,7 @@ export default function SettingsPage() {
                 </div>
                 <Button
                   size="sm"
-                  variant={user.plan === 'free' || (user.plan === 'premium' && plan.key === 'power') ? 'primary' : 'ghost'}
+                  variant={user.plan === 'explorer' || (user.plan === 'premium' && plan.key === 'power') ? 'primary' : 'ghost'}
                   onClick={() => handleUpgrade(plan.key)}
                   disabled={loadingCheckout !== null}
                 >
@@ -152,7 +152,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Cancelar */}
-        {user.plan !== 'free' && subscription?.subscription?.status === 'active' && !subscription?.subscription?.cancel_at_period_end && (
+        {user.plan !== 'explorer' && subscription?.subscription?.status === 'active' && !subscription?.subscription?.cancel_at_period_end && (
           <Card>
             <h2 className="text-sm font-semibold text-gray-700 mb-3">Cancelar assinatura</h2>
             <p className="text-xs text-gray-500 mb-3">
