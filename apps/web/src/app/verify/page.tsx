@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/AppLayout';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Card, Button, Badge, ScoreBar } from '@/components/ui/index';
 import { api, VerifyInput } from '@/lib/api';
+import { PaywallModal } from '@/components/PaywallModal';
 
 const STEPS = [
   { id:1, label:'Validando dados informados' },
@@ -38,6 +39,7 @@ export default function VerifyPage() {
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => { if (!loading && !user) router.replace('/login'); }, [user, loading, router]);
 
@@ -68,6 +70,7 @@ export default function VerifyPage() {
     if (!consent) { setError('Confirme o consentimento para prosseguir.'); return; }
     const hasData = Object.entries(form).some(([k,v]) => k !== 'name' && k !== 'city' && v?.trim());
     if (!hasData) { setError('Preencha ao menos um campo de contato.'); return; }
+    const isPaid = user && user.plan !== 'explorer';
     setSubmitting(true); setError(''); setCurrentStep(0); setCompletedSteps([]);
     try {
       const progressPromise = (async () => {
@@ -80,6 +83,13 @@ export default function VerifyPage() {
       if (form.username)   clean.username   = form.username;
       if (form.cpf)        clean.cpf        = form.cpf;
       if (form.birth_date) clean.birth_date = form.birth_date;
+      if (!isPaid) {
+        // Roda animacao completa para despertar interesse, depois mostra paywall
+        await progressPromise;
+        setSubmitting(false);
+        setShowPaywall(true);
+        return;
+      }
       const [result] = await Promise.all([api.verify.submit(clean), progressPromise]);
       router.push(`/report/${result.report_id}`);
     } catch (err:any) {
@@ -101,6 +111,8 @@ export default function VerifyPage() {
   ] as const;
 
   return (
+    <>
+      {showPaywall && <PaywallModal onClose={() => { setShowPaywall(false); setCurrentStep(0); setCompletedSteps([]); }} />}
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-4">
 
@@ -247,5 +259,6 @@ export default function VerifyPage() {
         </div>
       </div>
     </AppLayout>
+    </>
   );
 }
