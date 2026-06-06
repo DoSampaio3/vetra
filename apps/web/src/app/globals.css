@@ -141,3 +141,20 @@ body {
 }
 
 .animate-in { animation: fadeIn 0.35s ease forwards; }
+
+/* ── Mobile safe area (bottom nav) ── */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Mobile scroll fixes ── */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
