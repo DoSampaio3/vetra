@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/AppLayout';
 import { ScoreRing } from '@/components/ScoreRing';
 import { Card, Button, Badge, ScoreBar } from '@/components/ui/index';
 import { api, VerifyInput } from '@/lib/api';
+import { PaywallModal } from '@/components/PaywallModal';
 
 const STEPS = [
   { id: 1, label: 'Validando dados informados',             icon: '✓' },
@@ -68,6 +69,7 @@ export default function VerifyPage() {
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace('/login');
@@ -115,6 +117,9 @@ export default function VerifyPage() {
     if (form.cpf?.trim() && !validateCPF(form.cpf)) {
       setError('CPF inválido. Verifique o número informado.'); return;
     }
+    // Mostra paywall se não tem plano pago
+    if (user && user.plan === 'explorer') { setShowPaywall(true); return; }
+
     if (user && user.credits !== 999 && user.credits <= 0) {
       setError('Você não tem créditos. Adquira um plano para continuar.'); return;
     }
@@ -157,6 +162,8 @@ export default function VerifyPage() {
   ] as const;
 
   return (
+    <>
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6 pb-8 md:pb-4">
 
@@ -411,5 +418,6 @@ export default function VerifyPage() {
         </div>
       </div>
     </AppLayout>
+    </>
   );
 }
