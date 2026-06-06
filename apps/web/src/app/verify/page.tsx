@@ -199,10 +199,7 @@ export default function VerifyPage() {
 
             {/* Botões */}
             {!submitting && (
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button variant="ghost" onClick={handlePreview} disabled={previewing} size="md" className="w-full sm:w-auto">
-                  {previewing ? <><span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"/>Analisando...</> : '◎ Pré-visualizar'}
-                </Button>
+              <div className="flex gap-2">
                 <Button onClick={handleSubmit} disabled={!consent} size="md" className="flex-1 justify-center">
                   Gerar Análise →
                 </Button>
